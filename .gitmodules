@@ -1,0 +1,3 @@
+[submodule "Klar-Toolkit"]
+	path = Klar-Toolkit
+	url = https://github.com/PhilipLudington/Klar-Toolkit.git
