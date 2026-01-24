@@ -1,0 +1,8 @@
+# Build artifacts
+build/
+
+# Program file (user creates this)
+program.bf
+
+# macOS
+.DS_Store
