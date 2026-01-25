@@ -1,0 +1,123 @@
+// Brainfuck Interpreter in Klar
+//
+// Brainfuck commands:
+//   >  increment data pointer
+//   <  decrement data pointer
+//   +  increment byte at data pointer
+//   -  decrement byte at data pointer
+//   .  output byte at data pointer as ASCII
+//   ,  read byte from input into data pointer
+//   [  if byte at pointer is zero, jump past matching ]
+//   ]  if byte at pointer is nonzero, jump back to matching [
+
+fn main(args: [String]) -> i32 {
+    if args.len() < 2 {
+        print("Usage: brainfuck <program.bf>")
+        return 1
+    }
+
+    let filename: String = args.get(1).unwrap()
+    let result: Result[String, IoError] = File.read_to_string(filename.as_str())
+
+    if result.is_err() {
+        print("Error: Could not read file: {filename}")
+        return 1
+    }
+
+    let program: String = result.unwrap()
+    run(program.as_str())
+    return 0
+}
+
+fn run(program: string) {
+    // Standard 30,000 cell tape
+    var tape: [u8; 30000] = @repeat(0.as[u8], 30000)
+    var ptr: i32 = 0   // Data pointer (current cell)
+    var ip: i32 = 0    // Instruction pointer (current command)
+
+    let code: [u8] = program.bytes()
+    let len: i32 = code.len()
+
+    while ip < len {
+        let cmd: u8 = code.get(ip).unwrap()
+
+        if cmd == '>'.as[u8] {
+            ptr = ptr + 1
+            if ptr >= 30000 {
+                print("Error: Data pointer overflow")
+                return
+            }
+        } else if cmd == '<'.as[u8] {
+            ptr = ptr - 1
+            if ptr < 0 {
+                print("Error: Data pointer underflow")
+                return
+            }
+        } else if cmd == '+'.as[u8] {
+            tape[ptr] = tape[ptr] +% 1.as[u8]
+        } else if cmd == '-'.as[u8] {
+            tape[ptr] = tape[ptr] -% 1.as[u8]
+        } else if cmd == '.'.as[u8] {
+            print_char(tape[ptr])
+        } else if cmd == ','.as[u8] {
+            tape[ptr] = read_char()
+        } else if cmd == '['.as[u8] {
+            if tape[ptr] == 0.as[u8] {
+                // Jump forward to matching ]
+                var depth: i32 = 1
+                while depth > 0 {
+                    ip = ip + 1
+                    if ip >= len {
+                        print("Error: Unmatched [")
+                        return
+                    }
+                    let c: u8 = code.get(ip).unwrap()
+                    if c == '['.as[u8] {
+                        depth = depth + 1
+                    } else if c == ']'.as[u8] {
+                        depth = depth - 1
+                    }
+                }
+            }
+        } else if cmd == ']'.as[u8] {
+            if tape[ptr] != 0.as[u8] {
+                // Jump back to matching [
+                var depth: i32 = 1
+                while depth > 0 {
+                    ip = ip - 1
+                    if ip < 0 {
+                        print("Error: Unmatched ]")
+                        return
+                    }
+                    let c: u8 = code.get(ip).unwrap()
+                    if c == ']'.as[u8] {
+                        depth = depth + 1
+                    } else if c == '['.as[u8] {
+                        depth = depth - 1
+                    }
+                }
+            }
+        }
+        // All other characters are comments and ignored
+
+        ip = ip + 1
+    }
+}
+
+fn print_char(c: u8) {
+    var buf: [u8; 1] = @repeat(0.as[u8], 1)
+    buf[0] = c
+    var out: Stdout = stdout()
+    let r1: Result[i32, IoError] = out.write(ref buf)
+    let r2: Result[void, IoError] = out.flush()
+}
+
+fn read_char() -> u8 {
+    var buf: [u8; 1] = @repeat(0.as[u8], 1)
+    var input: Stdin = stdin()
+    let result: Result[i32, IoError] = input.read(ref buf)
+    if result.is_ok() and result.unwrap() > 0 {
+        return buf[0]
+    }
+    return 0.as[u8]
+}

@@ -14,14 +14,8 @@ This outputs the executable to `main` in the current directory.
 
 ## Running
 
-The interpreter reads from `program.bf` in the current directory:
-
 ```bash
-# Copy an example program
-cp examples/hello.bf program.bf
-
-# Run it
-./main
+./main examples/hello.bf
 ```
 
 Output:

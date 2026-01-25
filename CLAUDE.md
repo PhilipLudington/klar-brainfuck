@@ -12,9 +12,8 @@ examples/*.bf    # Example Brainfuck programs
 ## Build & Run
 
 ```bash
-klar build src/main.kl   # Build the interpreter
-cp examples/hello.bf program.bf
-./main                   # Run (reads program.bf)
+klar build src/main.kl      # Build the interpreter
+./main examples/hello.bf    # Run a program
 ```
 
 ## Klar Development
