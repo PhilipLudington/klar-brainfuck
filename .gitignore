@@ -6,3 +6,6 @@ program.bf
 
 # macOS
 .DS_Store
+
+# One checkout's working state, never committed
+/RESUME.md
